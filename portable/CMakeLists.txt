@@ -15,7 +15,7 @@ endif()
 
 # FreeRTOS internal cmake file. Do not use it in user top-level project
 
-add_library(freertos_kernel_port OBJECT
+add_library(${freertos_kernel_port} OBJECT
     # TEMPLATE Port
     $<$<STREQUAL:${FREERTOS_PORT},TEMPLATE>:
         template/port.c>
@@ -776,7 +776,7 @@ if( FREERTOS_PORT MATCHES "GCC_ARM_CM(3|4)_MPU" OR
     FREERTOS_PORT MATCHES "IAR_ARM_CM(23|33|55|85)_NONSECURE" OR
     FREERTOS_PORT MATCHES "IAR_ARM_CM(33|55|85)_TFM"
 )
-    target_sources(freertos_kernel_port PRIVATE
+    target_sources(${freertos_kernel_port} PRIVATE
         Common/mpu_wrappers.c
         Common/mpu_wrappers_v2.c
     )
@@ -879,9 +879,9 @@ if (DEFINED FREERTOS_ARM_V_8_1_M_PACBTI_CONFIG )
     endif()
 endif()
 
-add_library(freertos_kernel_port_headers INTERFACE)
+add_library(${freertos_kernel_port_headers} INTERFACE)
 
-target_include_directories(freertos_kernel_port_headers INTERFACE
+target_include_directories(${freertos_kernel_port_headers} INTERFACE
     # TEMPLATE Port
     $<$<STREQUAL:${FREERTOS_PORT},TEMPLATE>:${CMAKE_CURRENT_LIST_DIR}/template>
 
@@ -1215,7 +1215,7 @@ target_include_directories(freertos_kernel_port_headers INTERFACE
     $<$<STREQUAL:${FREERTOS_PORT},WIZC_PIC18>:${CMAKE_CURRENT_LIST_DIR}/WizC/PIC18>
 )
 
-target_link_libraries(freertos_kernel_port_headers
+target_link_libraries(${freertos_kernel_port_headers}
     INTERFACE
         $<$<STREQUAL:${FREERTOS_PORT},GCC_RP2040>:hardware_sync>
 )
@@ -1224,13 +1224,13 @@ if(FREERTOS_PORT STREQUAL GCC_POSIX)
     find_package(Threads REQUIRED)
 endif()
 
-target_link_libraries(freertos_kernel_port
+target_link_libraries(${freertos_kernel_port}
     PUBLIC
         $<$<STREQUAL:${FREERTOS_PORT},GCC_RP2040>:pico_base_headers>
         $<$<STREQUAL:${FREERTOS_PORT},GCC_XTENSA_ESP32>:idf::esp32>
-        freertos_kernel_port_headers
+        ${freertos_kernel_port_headers}
     PRIVATE
-        freertos_kernel_include
+        ${freertos_kernel_include}
         $<$<STREQUAL:${FREERTOS_PORT},GCC_POSIX>:Threads::Threads>
         "$<$<STREQUAL:${FREERTOS_PORT},GCC_RP2040>:hardware_clocks;hardware_exception;pico_multicore>"
         $<$<STREQUAL:${FREERTOS_PORT},MSVC_MINGW>:winmm> # Windows library which implements timers

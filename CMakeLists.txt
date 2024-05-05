@@ -1,5 +1,21 @@
 cmake_minimum_required(VERSION 3.15)
 
+if (NOT DEFINED FREERTOS_PREFIX)
+    set(FREERTOS_PREFIX "")
+endif()
+
+set(freertos_config "${FREERTOS_PREFIX}freertos_config")
+set(freertos_kernel "${FREERTOS_PREFIX}freertos_kernel")
+set(freertos_kernel_port "${FREERTOS_PREFIX}freertos_kernel_port")
+set(freertos_kernel_include "${FREERTOS_PREFIX}freertos_kernel_include")
+set(freertos_kernel_port_headers "${FREERTOS_PREFIX}freertos_kernel_port_headers")
+
+message("Target freertos_config: ${freertos_config}")
+message("Target freertos_kernel: ${freertos_kernel}")
+message("Target freertos_kernel_port: ${freertos_kernel_port}")
+message("Target freertos_kernel_include: ${freertos_kernel_include}")
+message("Target freertos_kernel_port_headers: ${freertos_kernel_port_headers}")
+
 # User is responsible to one mandatory option:
 #   FREERTOS_PORT, if not specified and native port detected, uses the native compile.
 #
@@ -16,7 +32,7 @@ cmake_minimum_required(VERSION 3.15)
 # implementation (e.g. when only static allocation is used).
 
 # `freertos_config` target defines the path to FreeRTOSConfig.h and optionally other freertos based config files
-if(NOT TARGET freertos_config )
+if(NOT TARGET ${freertos_config} )
     if (NOT DEFINED FREERTOS_CONFIG_FILE_DIRECTORY )
 
         message(FATAL_ERROR " freertos_config target not specified.  Please specify a cmake target that defines the include directory for FreeRTOSConfig.h:\n"
@@ -213,7 +229,7 @@ if(NOT FREERTOS_PORT)
         message(STATUS " Auto-Detected MINGW, setting FREERTOS_PORT=MSVC_MINGW")
         set(FREERTOS_PORT MSVC_MINGW CACHE STRING "FreeRTOS port name")
     endif()
-elseif((FREERTOS_PORT STREQUAL "A_CUSTOM_PORT") AND (NOT TARGET freertos_kernel_port) )
+elseif((FREERTOS_PORT STREQUAL "A_CUSTOM_PORT") AND (NOT TARGET ${freertos_kernel_port}) )
     message(FATAL_ERROR " FREERTOS_PORT is set to A_CUSTOM_PORT. Please specify the custom port target with all necessary files. For example:\n"
     " Assuming a directory of:\n"
     "  FreeRTOSCustomPort/\n"
@@ -235,13 +251,13 @@ elseif((FREERTOS_PORT STREQUAL "A_CUSTOM_PORT") AND (NOT TARGET freertos_kernel_
     "       freertos_kernel_include)")
 endif()
 
-add_library(freertos_kernel STATIC)
+add_library(${freertos_kernel} STATIC)
 
 ########################################################################
 add_subdirectory(include)
 add_subdirectory(portable)
 
-target_sources(freertos_kernel PRIVATE
+target_sources(${freertos_kernel} PRIVATE
     croutine.c
     event_groups.c
     list.c
@@ -253,19 +269,19 @@ target_sources(freertos_kernel PRIVATE
 
 if (DEFINED FREERTOS_HEAP )
     # User specified a heap implementation add heap implementation to freertos_kernel.
-    target_sources(freertos_kernel PRIVATE
+    target_sources(${freertos_kernel} PRIVATE
         # If FREERTOS_HEAP is digit between 1 .. 5 - it is heap number, otherwise - it is path to custom heap source file
         $<IF:$<BOOL:$<FILTER:${FREERTOS_HEAP},EXCLUDE,^[1-5]$>>,${FREERTOS_HEAP},portable/MemMang/heap_${FREERTOS_HEAP}.c>
     )
 endif()
 
 
-target_link_libraries(freertos_kernel
+target_link_libraries(${freertos_kernel}
     PUBLIC
-        freertos_kernel_include
-        freertos_kernel_port_headers
+        ${freertos_kernel_include}
+        ${freertos_kernel_port_headers}
     PRIVATE
-        freertos_kernel_port
+        ${freertos_kernel_port}
 
 )
 
